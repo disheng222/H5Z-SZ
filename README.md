@@ -4,9 +4,11 @@ hdf5 filter based on SZ compressor
 #Quick start
 
 Step 1: Download SZ package from : https://github.com/disheng222/SZ
+
 $ e.g., git clone https://github.com/disheng222/SZ
 
 Step 2: Simply install SZ by using "./configure --prefix=[INSTALL_PATH];make;make install"
+
 $ e.g., ./configure --prefix=/home/sdi/Install/sz-1.4.10-beta-install
 
 Step 3: You can go to example/ directory to test whether the installation is fine by the following commend: ./test.sh
