@@ -1,5 +1,5 @@
-# H5Z-SZ
-hdf5 filter based on SZ compressor
+#H5Z-SZ
+#the filter for integrating SZ into HDF5
 
 #Quick start
 
@@ -28,5 +28,5 @@ Step 9: Set the environment variable: LD_LIBRARY_PATH=$HDF5_HOME/lib:$SZ_HOME/li
 Step 10: Run test_compress.sh and test_decompress.sh to do the test (testing data is in the directory testdata/ of the package).
 
 
-Contact:
+Contact: 
 sdi1@anl.gov
