@@ -32,7 +32,7 @@ MPICC 		= mpicc
 ##   FLAGS
 ##=======================================================================
 
-SZFLAGS		= -I$(SZPATH)/include #$(SZPATH)/lib/libsz.a $(SZPATH)/lib/libzlib.a
+SZFLAGS         = -I$(SZPATH)/include -L$(SZPATH)/lib
 
 HDF5FLAGS	= -I$(HDF5PATH)/include #$(HDF5PATH)/lib/libhdf5.a
 
@@ -53,7 +53,7 @@ $(OBJ)/%.o:	$(SRC)/%.c
 		
 $(LIB)/$(SHARED):	$(OBJS)
 		@mkdir -p $(LIB)
-		$(CC) -shared -o $(LIB)/$(SHARED) $(OBJS) -lc
+		$(CC) -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -lc -lsz -lzlib
 
 $(LIB)/$(STATIC):	$(OBJS)
 		@mkdir -p $(LIB)

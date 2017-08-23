@@ -15,18 +15,6 @@
 #include "H5Z_SZ.h"
 
 #define DATASET "testdata_compressed"
-#define MAX_CHUNK_SIZE 4294967295 //2^32-1
-
-/* convenience macro to handle errors */
-#define ERROR(FNAME)                                              \
-do {                                                              \
-    int _errno = errno;                                           \
-    fprintf(stderr, #FNAME " failed at line %d, errno=%d (%s)\n", \
-        __LINE__, _errno, _errno?strerror(_errno):"ok");          \
-    return 1;                                                     \
-} while(0)
-
-void init_dims_chunk(int dim, hsize_t dims[5], hsize_t chunk[5], size_t nbEle, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 int main(int argc, char * argv[])
 {
@@ -36,7 +24,6 @@ int main(int argc, char * argv[])
 	unsigned int *cd_values = NULL;
 	//unsigned int cd_values[7];
 	
-	char *cfgFile = NULL;
 	herr_t status;
 	htri_t avail;
 	unsigned filter_config;
@@ -45,14 +32,14 @@ int main(int argc, char * argv[])
 
 	if(argc < 4)
 	{
-		printf("Test case: szToHDF5 [dataType] [endianType] [config_file] [srcFilePath] [dimension sizes...]\n");
-		printf("Example: szToHDF5 -f/-d -l/-b sz.config testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
+		printf("Test case: szToHDF5 [dataType] [config_file] [srcFilePath] [dimension sizes...]\n");
+		printf("Example: szToHDF5 -f/-d sz.config testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
 		exit(0);
 	}
 
-	printf("argv[2]=%s\n", argv[2]);
+	printf("config file = %s\n", argv[2]);
 	int dataType = strcmp(argv[1],"-f")==0?SZ_FLOAT:SZ_DOUBLE;
-	cfgFile=argv[2];
+	strcpy(cfgFile, argv[2]);
 	sprintf(oriFilePath, "%s", argv[3]);
 	if(argc>=5)
 		r1 = atoi(argv[4]); //8
@@ -122,7 +109,7 @@ int main(int argc, char * argv[])
 	//			params->errorBoundMode = ABS;
     //			params->absErrBound = 1E-4;
 	
-	H5Z_SZ_Init(cfgFile);
+	//H5Z_SZ_Init(cfgFile);
 	
 	printf("....Writing SZ compressed data.............\n");
     	
@@ -133,7 +120,7 @@ int main(int argc, char * argv[])
 		printf("original data = ");
 		for(i=0;i<20;i++)
 			printf("%f ", data[i]);	
-		printf("\n");	
+		printf("....\n");	
 
 		if(dataEndianType == LITTLE_ENDIAN_DATA)
 		{
@@ -151,6 +138,12 @@ int main(int argc, char * argv[])
 	else
 	{
 		double *data = readDoubleData(oriFilePath, &nbEle, &status);
+		
+		printf("original data = ");
+		for(i=0;i<20;i++)
+			printf("%f ", data[i]);	
+		printf("....\n");			
+		
 		if(dataEndianType == LITTLE_ENDIAN_DATA)
 		{
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_IEEE_F64LE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
@@ -176,86 +169,4 @@ int main(int argc, char * argv[])
     
 	return 0;
 }
-
-void init_dims_chunk(int dim, hsize_t dims[5], hsize_t chunk[5], size_t nbEle, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
-{
-	switch(dim)
-	{
-	case 1: 
-		dims[0] = r1;
-		if(nbEle <= MAX_CHUNK_SIZE) //2^32-1
-			chunk[0] = r1;
-		else
-			chunk[0] = 2147483648;//2^31
-		break;
-	case 2:
-		dims[0] = r2;
-		dims[1] = r1;
-		if(nbEle <= MAX_CHUNK_SIZE) //2^32-1
-		{
-			chunk[0] = r2;
-			chunk[1] = r1;
-		}
-		else
-		{
-			printf("Error: size is too big!\n");
-			exit(0);
-		}	
-		break;
-	case 3:
-		dims[0] = r3;
-		dims[1] = r2;
-		dims[2] = r1;
-		if(nbEle <= MAX_CHUNK_SIZE) //2^32-1
-		{
-			chunk[0] = r3;
-			chunk[1] = r2;
-			chunk[2] = r1;
-		}		
-		else
-		{
-			printf("Error: size is too big!\n");
-			exit(0);
-		}
-		break;
-	case 4:
-		dims[0] = r4;
-		dims[1] = r3;
-		dims[2] = r2;
-		dims[3] = r1;
-		if(nbEle <= MAX_CHUNK_SIZE) //2^32-1
-		{
-			chunk[0] = r4;
-			chunk[1] = r3;
-			chunk[2] = r2;
-			chunk[3] = r1;
-		}		
-		else
-		{
-			printf("Error: size is too big!\n");
-			exit(0);
-		}
-		break;
-	default:
-		dims[0] = r5;
-		dims[1] = r4;
-		dims[2] = r3;
-		dims[3] = r2;
-		dims[4] = r1;
-		if(nbEle <= MAX_CHUNK_SIZE) //2^32-1
-		{
-			chunk[0] = r5;
-			chunk[1] = r4;
-			chunk[2] = r3;
-			chunk[3] = r2;
-			chunk[4] = r1;
-		}		
-		else
-		{
-			printf("Error: size is too big!\n");
-			exit(0);
-		}
-	}
-}
-
 
