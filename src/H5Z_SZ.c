@@ -35,10 +35,13 @@ const void *H5PLget_plugin_info(void) {return H5Z_SZ;}
 int H5Z_SZ_Init(char* cfgFile) 
 { 
 	herr_t ret;
+	//printf("start in H5Z_SZ_Init, load_conffile_flag = %d\n", load_conffile_flag);
 	if(load_conffile_flag==0)
 	{
 		load_conffile_flag = 1;
 		int status = SZ_Init(cfgFile);
+		//printf("cfgFile=%s\n", cfgFile);
+		//printf("szMode=%d, errorBoundMode=%d, relBoundRatio=%f\n", szMode, errorBoundMode, relBoundRatio);
 		if(status == SZ_NSCS)
 			return SZ_NSCS;
 		else
@@ -79,7 +82,7 @@ sz_params* H5Z_SZ_Init_Default()
     conf_params->gzipMode = 1; //best speed
     conf_params->errorBoundMode = REL; //details about errorBoundMode can be found in sz.config
     conf_params->absErrBound = 1E-4;
-    conf_params->relBoundRatio = 1E-4;
+    conf_params->relBoundRatio = 1E-3;
     conf_params->pw_relBoundRatio = 1E-4;
     conf_params->segment_size = 32;
     conf_params->pwr_type = SZ_PWR_AVG_TYPE;	
@@ -197,6 +200,7 @@ void SZ_metaDataToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int dataT
 
 static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_id)
 {
+	//printf("start in H5Z_sz_set_local\n");
 	size_t r5=0,r4=0,r3=0,r2=0,r1=0, dsize;
 	static char const *_funcname_ = "H5Z_zfp_set_local";
 	int i, ndims, ndims_used = 0;	
@@ -276,7 +280,8 @@ done:
 
 static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[], size_t nbytes, size_t* buf_size, void** buf)
 {
-	H5Z_SZ_Init_Default();
+	//printf("start in H5Z_filter_sz\n");
+	//H5Z_SZ_Init_Default();
 	
 	size_t r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
 	int dimSize = 0, dataType = 0;
@@ -312,9 +317,11 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 	else
 	{
 		size_t outSize = 0;
+	
 		if(dataType == SZ_FLOAT)
 		{
 			float* data = (float*)(*buf);
+			//printf("2: szMode=%d, errorBoundMode=%d, relBoundRatio=%f, data[0]=%f, data[1]=%f\n", szMode, errorBoundMode, relBoundRatio, data[0], data[1]);
 			unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = bytes;
