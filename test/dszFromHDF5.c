@@ -27,18 +27,20 @@ int main(int argc, char * argv[])
 	H5Z_filter_t filter_id = 0;
 	herr_t status;
 	H5T_class_t type_class;
+	H5T_sign_t dsign;
+	H5T_order_t dorder;
 
 	htri_t avail;
 	char filter_name[80];
 	unsigned int flags = 0;
-	size_t nelmts = 0;
+	size_t nelmts = 0, dsize;
 	unsigned int values_out[7] = {0,0,0,0,0,0,0}; //at most 7 parameters 
-	float* data = NULL;
 
 	if(argc < 2)
 	{
 		printf("Test case: dszFromHDF5 [hdf5FilePath]\n");
-		printf("Example: szToHDF5 testdata/x86/testfloat_8_8_128.dat.sz.hdf5\n");
+		printf("Example 1: dszFromHDF5 testdata/x86/testfloat_8_8_128.dat.sz.hdf5\n");
+		printf("Example 2: dszFromHDF5 testdata/x86/testint32_8x8x8.dat.sz.hdf5\n");
 		exit(0);
 	}
 
@@ -61,7 +63,6 @@ int main(int argc, char * argv[])
 	
 	space_id = H5Dget_space(dset);	
 	nbEle = H5Sget_simple_extent_npoints(space_id);
-	data = (float*)malloc(sizeof(float)*nbEle);	
 	
 	if((dtype = H5Dget_type(dset)) < 0)
 		printf("Error: H5Dget_type(dset) < 0\n");
@@ -70,7 +71,18 @@ int main(int argc, char * argv[])
 	printf("....Reading SZ compressed data .....................\n");
 
 	if((type_class = H5Tget_class(dtype)) < 0)
+	{
 		printf("Error: H5Tget_class<0\n");
+		exit(0);
+	}	
+	if (0 == (dsize = H5Tget_size(dtype)))
+	{
+		printf("Error: H5Tget_size==0\n");
+		exit(0);		
+	}
+		
+	if((dorder = H5Tget_order(dtype)) < 0)
+		printf("Error: H5Tget_order<0\n");
 
 	switch (type_class)
 	{
@@ -79,27 +91,174 @@ int main(int argc, char * argv[])
 		|| H5Tequal(dtype, H5T_NATIVE_FLOAT) == 1) 
 		{
 			printf("data type: float\n");
-			status = H5Dread(dset, H5T_IEEE_F32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+			float* data = (float*)malloc(sizeof(float)*nbEle);		
+			if(dorder==H5T_ORDER_LE)		
+				status = H5Dread(dset, H5T_IEEE_F32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+			else //H5T_ORDER_BE
+				status = H5Dread(dset, H5T_IEEE_F32BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+			/*Print the first 20 data values to check the correctness.*/	
+			int i;
+			printf("reconstructed data = ");
+			for(i=0;i<20;i++)
+				printf("%f ", data[i]);	
+			printf("\n");		
+			free(data);		
         }
 		else //64bit: double 
 		{
 			printf("data type: double\n");
-			status = H5Dread(dset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+			double* data = (double*)malloc(sizeof(double)*nbEle);
+			if(dorder==H5T_ORDER_LE)
+				status = H5Dread(dset, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+			else
+				status = H5Dread(dset, H5T_IEEE_F64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+			/*Print the first 10 data values to check the correctness.*/	
+			int i;
+			printf("reconstructed data = ");
+			for(i=0;i<20;i++)
+				printf("%f ", data[i]);	
+			printf("\n");	
+			free(data);						
 		}
 		break;
+	case H5T_INTEGER:
+		if (0 > (dsign = H5Tget_sign(dtype)))
+		{
+			printf("Error in calling H5Tget_sign(type_id)....\n");
+			exit(0);
+		}
+		if(dsign == H5T_SGN_NONE) //unsigned
+		{
+			if(dsize==1)
+			{
+				printf("data type: unsigned char\n");
+				unsigned char* data = (unsigned char*)malloc(sizeof(unsigned char)*nbEle);		
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_U8LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_U8BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);		
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%d ", data[i]);	
+				printf("\n");	
+				free(data);								
+			}
+			else if(dsize==2)
+			{
+				printf("data type: unsigned short\n");
+				unsigned short* data = (unsigned short*)malloc(sizeof(unsigned short)*nbEle);		
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_U16LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_U16BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);	
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%d ", data[i]);	
+				printf("\n");	
+				free(data);									
+			}
+			else if(dsize==4)
+			{
+				printf("data type: unsigned int\n");
+				unsigned int* data = (unsigned int*)malloc(sizeof(unsigned int)*nbEle);		
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_U32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_U32BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);		
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%d ", data[i]);	
+				printf("\n");	
+				free(data);								
+			}
+			else if(dsize==8)
+			{
+				printf("data type: unsigned long\n");
+				unsigned long* data = (unsigned long*)malloc(sizeof(unsigned long)*nbEle);		
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_U64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_U64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);	
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%ld ", data[i]);	
+				printf("\n");	
+				free(data);									
+			}
+		}
+		else
+		{
+			if(dsize==1)
+			{
+				printf("data type: char\n");
+				char *data = (char*)malloc(sizeof(char)*nbEle);
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_I8LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_I8BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%d ", data[i]);	
+				printf("\n");	
+				free(data);										
+			}
+			else if(dsize==2)
+			{
+				printf("data type: short\n");
+				short *data = (short*)malloc(sizeof(short)*nbEle);
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_I16LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_I16BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);		
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%d ", data[i]);	
+				printf("\n");	
+				free(data);
+			}
+			else if(dsize==4)
+			{
+				printf("data type: int\n");
+				int *data = (int*)malloc(sizeof(int)*nbEle);
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_I32BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);		
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%d ", data[i]);	
+				printf("\n");	
+				free(data);								
+			}
+			else if(dsize==8)
+			{
+				printf("data type: long\n");
+				long *data = (long*)malloc(sizeof(long)*nbEle);
+				if(dorder==H5T_ORDER_LE)	
+					status = H5Dread(dset, H5T_STD_I64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				else
+					status = H5Dread(dset, H5T_STD_I64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+				int i;
+				printf("reconstructed data = ");
+				for(i=0;i<20;i++)
+					printf("%ld ", data[i]);	
+				printf("\n");	
+				free(data);									
+			}			
+		}		
+		
+		break;
 	default: 
-		printf("Error: support only float and double currently\n");
+		printf("Error: H5Z-SZ supports only float, double or integers.\n");
 		exit(0);
 	}
-	
-	/*Print the first 10 data values to check the correctness.*/	
-	int i;
-	printf("reconstructed data = ");
-	for(i=0;i<20;i++)
-		printf("%f ", data[i]);	
-	printf("\n");	
-	
-	free(data);
 	
 	status = H5Pclose(dcpl);
 	status = H5Dclose(dset);

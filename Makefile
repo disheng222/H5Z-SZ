@@ -9,7 +9,7 @@
 ##   PLEASE SET THESE VARIABLES BEFORE COMPILING
 ##=======================================================================
 
-SZPATH		= /home/sdi/Install/sz-1.4.10-beta-install
+SZPATH		= /home/sdi/Install/sz-1.4.12.1-install
 HDF5PATH	= /home/sdi/Install/hdf5-1.10.1-install
 
 ##=======================================================================
@@ -53,7 +53,7 @@ $(OBJ)/%.o:	$(SRC)/%.c
 		
 $(LIB)/$(SHARED):	$(OBJS)
 		@mkdir -p $(LIB)
-		$(CC) -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -lc -lsz -lzlib
+		$(CC) -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -lc -lSZ -lzlib
 
 $(LIB)/$(STATIC):	$(OBJS)
 		@mkdir -p $(LIB)

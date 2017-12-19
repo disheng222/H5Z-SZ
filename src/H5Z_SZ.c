@@ -160,7 +160,7 @@ void SZ_metaDataToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int dataT
 	*cd_values = (unsigned int*)malloc(sizeof(unsigned int)*7);
 	int dim = computeDimension(r5, r4, r3, r2, r1);
 	(*cd_values)[0] = dim;
-	(*cd_values)[1] = dataType;	//0: FLOAT ; 1: DOUBLE
+	(*cd_values)[1] = dataType;	//0: FLOAT ; 1: DOUBLE ; 2,3,4,....: INTEGER....
 	switch(dim)
 	{
 	case 1:
@@ -207,6 +207,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	hsize_t dims[H5S_MAX_RANK], dims_used[5] = {0,0,0,0,0};	
 	herr_t retval = 0;
 	H5T_class_t dclass;
+	H5T_sign_t dsign;
 	unsigned int flags = 0;
 	//conf_params = H5Z_SZ_Init_Default();
 	H5Z_SZ_Init(cfgFile);
@@ -217,7 +218,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 		H5Z_SZ_PUSH_AND_GOTO(H5E_ARGS, H5E_BADTYPE, -1, "not a datatype");
 
 	if (0 == (dsize = H5Tget_size(type_id)))
-		H5Z_SZ_PUSH_AND_GOTO(H5E_ARGS, H5E_BADTYPE, -1, "not a datatype");
+		H5Z_SZ_PUSH_AND_GOTO(H5E_ARGS, H5E_BADTYPE, -1, "size is smaller than 0!");
 
 	if (0 > (ndims = H5Sget_simple_extent_dims(chunk_space_id, dims, 0)))
 		H5Z_SZ_PUSH_AND_GOTO(H5E_ARGS, H5E_BADTYPE, -1, "not a data space");
@@ -231,10 +232,52 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	
 	if (dclass == H5T_FLOAT)
 		dataType = dsize==4? SZ_FLOAT: SZ_DOUBLE;
+	else if(dclass == H5T_INTEGER)
+	{
+		if (0 > (dsign = H5Tget_sign(type_id)))
+			H5Z_SZ_PUSH_AND_GOTO(H5E_ARGS, H5E_BADTYPE, -1, "Error in calling H5Tget_sign(type_id)....");		
+		if(dsign == H5T_SGN_NONE) //unsigned
+		{
+			switch(dsize)
+			{
+			case 1:
+				dataType = SZ_UINT8;
+				break;
+			case 2:
+				dataType = SZ_UINT16;
+				break;
+			case 4:
+				dataType = SZ_UINT32;
+				break;
+			case 8:
+				dataType = SZ_UINT64;
+				break;
+			}
+		}
+		else
+		{
+			switch(dsize)
+			{
+			case 1:
+				dataType = SZ_INT8;
+				break;
+			case 2:
+				dataType = SZ_INT16;
+				break;
+			case 4:
+				dataType = SZ_INT32;
+				break;
+			case 8:
+				dataType = SZ_INT64;
+				break;
+			}			
+		}
+	}
 	else
 	{
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_BADTYPE, 0, "datatype class must be H5T_FLOAT or H5T_INTEGER");
 	}
+	
 	
 	switch(ndims_used)
 	{
@@ -296,46 +339,201 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 	if (flags & H5Z_FLAG_REVERSE) 
 	{  
 		/* decompress data */
-		if(dataType == SZ_FLOAT)
+		if(dataType == SZ_FLOAT)//==0
 		{
-			float* data = SZ_decompress(SZ_FLOAT, *buf, nbytes, r5, r4, r3, r2, r1);
+			float* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
 										
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(float);
 			return *buf_size;
 		}
-		else //==8
+		else if(dataType == SZ_DOUBLE)//==1
 		{
-			double* data = SZ_decompress(SZ_DOUBLE, *buf, nbytes, r5, r4, r3, r2, r1);
+			double* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(double);			
 			return *buf_size;
 		}
+		else if(dataType == SZ_INT8)
+		{
+			char* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(char);
+			return *buf_size;			
+		}
+		else if(dataType == SZ_UINT8)
+		{
+			unsigned char* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(unsigned char);
+			return *buf_size;			
+		}
+		else if(dataType == SZ_INT16)
+		{
+			short* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(short);
+			return *buf_size;			
+		}
+		else if(dataType == SZ_UINT16)
+		{
+			unsigned short* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(unsigned short);
+			return *buf_size;		
+		}
+		else if(dataType == SZ_INT32)
+		{
+			int* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(int);
+			return *buf_size;				
+		}
+		else if(dataType == SZ_UINT32)
+		{
+			unsigned int* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(unsigned int);
+			return *buf_size;				
+		}
+		else if(dataType == SZ_INT64)
+		{
+			long* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(long);
+			return *buf_size;				
+		}
+		else if(dataType == SZ_UINT64)
+		{
+			unsigned long* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
+										
+			free(*buf);
+			*buf = data;
+			*buf_size = nbEle*sizeof(unsigned long);
+			return *buf_size;			
+		}
+		else
+		{
+			printf("Decompression error: unknown data type: %d\n", dataType);
+			exit(0);
+		}
+		
 	}
 	else
 	{
 		size_t outSize = 0;
 	
-		if(dataType == SZ_FLOAT)
+		if(dataType == SZ_FLOAT)//==0
 		{
 			float* data = (float*)(*buf);
 			//printf("2: szMode=%d, errorBoundMode=%d, relBoundRatio=%f, data[0]=%f, data[1]=%f\n", szMode, errorBoundMode, relBoundRatio, data[0], data[1]);
-			unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
 			return outSize;
 		}
-		else //==1
+		else if(dataType == SZ_DOUBLE)//==1
 		{
 			double* data = (double*)(*buf);
-			unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
 			return outSize;	
+		}
+		else if(dataType == SZ_INT8)
+		{
+			char* data = (char*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;				
+		}
+		else if(dataType == SZ_UINT8)
+		{
+			unsigned char* data = (unsigned char*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;					
+		}
+		else if(dataType == SZ_INT16)
+		{
+			short* data = (short*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;					
+		}
+		else if(dataType == SZ_UINT16)
+		{
+			unsigned short* data = (unsigned short*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;					
+		}
+		else if(dataType == SZ_INT32)
+		{
+			int* data = (int*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;				
+		}
+		else if(dataType == SZ_UINT32)
+		{
+			unsigned int* data = (unsigned int*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;					
+		}
+		else if(dataType == SZ_INT64)
+		{
+			long* data = (long*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;				
+		}
+		else if(dataType == SZ_UINT64)
+		{
+			unsigned long* data = (unsigned long*)(*buf);
+			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+			free(*buf);
+			*buf = bytes;
+			*buf_size = outSize;
+			return outSize;					
+		}
+		else 
+		{
+			printf("Compression error: unknown data type: %d\n", dataType);
+			exit(0);
 		}
 	}
 	H5Z_SZ_Finalize();

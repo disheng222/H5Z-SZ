@@ -48,5 +48,10 @@ Step 3 (Decompression): Read the compressed HDF5 file: h5dump [compressed_hdf5_f
  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+##Trouble shooting
+
+1. When using "make" command to compile test/, I ran into the following error: szToHDF5.c:15:20: fatal error: H5Z_SZ.h: No such file or directory
+Answer: You probably forgot to execute "make install" after you use "make" to compile the H5Z-SZ package. Run "make install" will solve the problem.
+
 Contact: 
 sdi1@anl.gov
