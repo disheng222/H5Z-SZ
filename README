@@ -34,7 +34,7 @@ Testing method 1 (with library):
 
 Step 1: Then, go to the ./test/ directory, and edit its Makefile by setting SZPATH and HDF5PATH similarly.
 
-Step 2: make
+Step 2: make (Note: you need to use $(MPICC) instead of $(CC) to compile the package, if you are using parallel version of HDF5)
 
 Step 3: Run test_compress.sh and test_decompress.sh to do the test (testing data is in the directory testdata/ of the package).
 

@@ -202,7 +202,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 {
 	//printf("start in H5Z_sz_set_local\n");
 	size_t r5=0,r4=0,r3=0,r2=0,r1=0, dsize;
-	static char const *_funcname_ = "H5Z_zfp_set_local";
+	static char const *_funcname_ = "H5Z_sz_set_local";
 	int i, ndims, ndims_used = 0;	
 	hsize_t dims[H5S_MAX_RANK], dims_used[5] = {0,0,0,0,0};	
 	herr_t retval = 0;
