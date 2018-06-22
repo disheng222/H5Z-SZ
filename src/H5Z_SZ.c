@@ -70,28 +70,28 @@ sz_params* H5Z_SZ_Init_Default()
 	herr_t ret = H5Zregister(H5Z_SZ);	
 	
 	sz_params* conf_params = (sz_params *)malloc(sizeof(sz_params));
-	conf_params->quantization_intervals = 0;
-	conf_params->max_quant_intervals = 65536;
-    conf_params->dataEndianType = LITTLE_ENDIAN_DATA;
-    conf_params->sol_ID = SZ;
-    conf_params->layers = 1;
-    conf_params->sampleDistance = 100;
-    conf_params->predThreshold = 0.99;
-    conf_params->offset = 0;
-    conf_params->szMode = SZ_BEST_COMPRESSION;
-    conf_params->gzipMode = 1; //best speed
-    conf_params->errorBoundMode = REL; //details about errorBoundMode can be found in sz.config
-    conf_params->absErrBound = 1E-4;
-    conf_params->relBoundRatio = 1E-3;
-    conf_params->pw_relBoundRatio = 1E-4;
-    conf_params->segment_size = 32;
-    conf_params->pwr_type = SZ_PWR_AVG_TYPE;	
+	confparams_cpr->quantization_intervals = 0;
+	confparams_cpr->max_quant_intervals = 65536;
+    dataEndianType = LITTLE_ENDIAN_DATA;
+    confparams_cpr->sol_ID = SZ;
+    //confparams_cpr->layers = 1;
+    confparams_cpr->sampleDistance = 100;
+    confparams_cpr->predThreshold = 0.99;
+    //confparams_cpr->offset = 0;
+    confparams_cpr->szMode = SZ_BEST_COMPRESSION;
+    confparams_cpr->gzipMode = 1; //best speed
+    confparams_cpr->errorBoundMode = REL; //details about errorBoundMode can be found in sz.config
+    confparams_cpr->absErrBound = 1E-4;
+    confparams_cpr->relBoundRatio = 1E-3;
+    confparams_cpr->pw_relBoundRatio = 1E-4;
+    confparams_cpr->segment_size = 32;
+    confparams_cpr->pwr_type = SZ_PWR_AVG_TYPE;	
 	
 	int status = SZ_Init_Params(conf_params);
 	if(status == SZ_NSCS || ret < 0)
 		return NULL;
 	else
-		return conf_params;
+		return confparams_cpr;
 }
 
 int H5Z_SZ_Finalize()
@@ -107,6 +107,7 @@ int H5Z_SZ_Finalize()
  * */
 void SZ_cdArrayToMetaData(size_t cd_nelmts, const unsigned int cd_values[], int* dimSize, int* dataType, size_t* r5, size_t* r4, size_t* r3, size_t* r2, size_t* r1)
 {
+	//printf("cd_nelmts=%zu\n", cd_nelmts); 
 	assert(cd_nelmts >= 4);
 	unsigned char bytes[8];	
 	*dimSize = cd_values[0];
@@ -148,6 +149,7 @@ void SZ_cdArrayToMetaData(size_t cd_nelmts, const unsigned int cd_values[], int*
 		*r2 = cd_values[5];
 		*r1 = cd_values[6];		
 	}
+	//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", *r5, *r4, *r3, *r2, *r1);	
 }
 
 /**
@@ -230,6 +232,8 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 		ndims_used++;
 	}
 	
+	//printf("dclass=%d, H5T_FLOAT=%d, H5T_INTEGER=%d\n", dclass, H5T_FLOAT, H5T_INTEGER);
+	
 	if (dclass == H5T_FLOAT)
 		dataType = dsize==4? SZ_FLOAT: SZ_DOUBLE;
 	else if(dclass == H5T_INTEGER)
@@ -275,6 +279,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	}
 	else
 	{
+		//printf("Error: dclass...\n");
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_BADTYPE, 0, "datatype class must be H5T_FLOAT or H5T_INTEGER");
 	}
 	
@@ -328,6 +333,10 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 	
 	size_t r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
 	int dimSize = 0, dataType = 0;
+	
+	if(cd_nelmts==0) //this is special data such as string, which should not be treated as values.
+		return nbytes;
+	
 	SZ_cdArrayToMetaData(cd_nelmts, cd_values, &dimSize, &dataType, &r5, &r4, &r3, &r2, &r1);
 	
 /*	int i=0;
