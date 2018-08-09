@@ -126,30 +126,30 @@ void SZ_cdArrayToMetaData(size_t cd_nelmts, const unsigned int cd_values[], int*
 		break;
 	case 2:
 		*r3 = *r4 = *r5 = 0;
-		*r2 = cd_values[2];
-		*r1 = cd_values[3];
+		*r2 = cd_values[3];
+		*r1 = cd_values[2];
 		break;
 	case 3:
 		*r4 = *r5 = 0;
-		*r3 = cd_values[2];
+		*r3 = cd_values[4];
 		*r2 = cd_values[3];
-		*r1 = cd_values[4];
+		*r1 = cd_values[2];
 		break;
 	case 4:
 		*r5 = 0;
-		*r4 = cd_values[2];
-		*r3 = cd_values[3];
-		*r2 = cd_values[4];
-		*r1 = cd_values[5];	
+		*r4 = cd_values[5];
+		*r3 = cd_values[4];
+		*r2 = cd_values[3];
+		*r1 = cd_values[2];	
 		break;
 	default: 
-		*r5 = cd_values[2];
-		*r4 = cd_values[3];
+		*r5 = cd_values[6];
+		*r4 = cd_values[5];
 		*r3 = cd_values[4];
-		*r2 = cd_values[5];
-		*r1 = cd_values[6];		
+		*r2 = cd_values[3];
+		*r1 = cd_values[2];		
 	}
-	//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", *r5, *r4, *r3, *r2, *r1);	
+	//printf("SZ_cdArrayToMetaData: r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", *r5, *r4, *r3, *r2, *r1);	
 }
 
 /**
@@ -350,6 +350,12 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		/* decompress data */
 		if(dataType == SZ_FLOAT)//==0
 		{
+                        //size_t a = r3;
+                        //r3 = 0;
+                        //r2 = r1*r2;
+                        //r1 = a;
+		
+			//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", r5, r4, r3, r2, r1);
 			float* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
 										
 			free(*buf);
@@ -452,6 +458,13 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		{
 			float* data = (float*)(*buf);
 			//printf("2: szMode=%d, errorBoundMode=%d, relBoundRatio=%f, data[0]=%f, data[1]=%f\n", szMode, errorBoundMode, relBoundRatio, data[0], data[1]);
+	                //size_t a = r3;
+                        //r3 = 0;
+			//r2 = r1*r2;
+                        //r1 = a;
+			//r3 = r1;
+			//r1 = a;
+			//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", r5, r4, r3, r2, r1);
 			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = bytes;
