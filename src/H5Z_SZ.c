@@ -13,6 +13,28 @@
 #include "H5Z_SZ.h"
 #include "H5PLextern.h"
 
+struct timeval startTime;
+struct timeval endTime;  /* Start and end times */
+struct timeval costStart; /*only used for recording the cost*/
+double totalCost = 0;
+
+
+void cost_start()
+{
+        totalCost = 0;
+        gettimeofday(&costStart, NULL);
+}
+
+void cost_end()
+{
+        double elapsed;
+        struct timeval costEnd;
+        gettimeofday(&costEnd, NULL);
+        elapsed = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
+        totalCost += elapsed;
+}
+
+
 //sz_params* conf_params = NULL;
 
 int load_conffile_flag = 0; //0 means 'not yet', 1 means 'already loaded'
@@ -96,7 +118,7 @@ sz_params* H5Z_SZ_Init_Default()
 
 int H5Z_SZ_Finalize()
 {
-	SZ_Finalize();
+	//SZ_Finalize();
 	herr_t ret = H5Zunregister(H5Z_FILTER_SZ);
 	if (ret < 0) return -1;
 	return 0;
@@ -233,7 +255,6 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	}
 	
 	//printf("dclass=%d, H5T_FLOAT=%d, H5T_INTEGER=%d\n", dclass, H5T_FLOAT, H5T_INTEGER);
-	
 	if (dclass == H5T_FLOAT)
 		dataType = dsize==4? SZ_FLOAT: SZ_DOUBLE;
 	else if(dclass == H5T_INTEGER)
@@ -313,7 +334,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	unsigned int* cd_values;
 
 	if (0 > H5Pget_filter_by_id(dcpl_id, H5Z_FILTER_SZ, &flags, &cd_nelmts, mem_cd_values, 0, NULL, NULL))
-		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_CANTGET, 0, "unable to get current ZFP cd_values");
+		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_CANTGET, 0, "unable to get current SZ cd_values");
 
 	SZ_metaDataToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1);
 	
@@ -329,12 +350,12 @@ done:
 
 static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[], size_t nbytes, size_t* buf_size, void** buf)
 {
-	//printf("start in H5Z_filter_sz\n");
+//	printf("start in H5Z_filter_sz\n");
 	//H5Z_SZ_Init_Default();
 	
 	size_t r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
 	int dimSize = 0, dataType = 0;
-	
+
 	if(cd_nelmts==0) //this is special data such as string, which should not be treated as values.
 		return nbytes;
 	
@@ -347,13 +368,13 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 	size_t nbEle = computeDataLength(r5, r4, r3, r2, r1); 
 	
 	if (flags & H5Z_FLAG_REVERSE) 
-	{  
+	{ 
+		cost_start();
 		/* decompress data */
 		if(dataType == SZ_FLOAT)//==0
 		{
-			//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", r5, r4, r3, r2, r1);
 			float* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
-										
+
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(float);
@@ -434,16 +455,18 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			printf("Decompression error: unknown data type: %d\n", dataType);
 			exit(0);
 		}
-		
+		cost_end();
+		printf("decompression time = %lf, decompression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
 	}
 	else
 	{
 		size_t outSize = 0;
 	
+		printf("r5=%d, r4=%d, r3=%d, r2=%d, r1=%d, dataType=%d\n", r5, r4, r3, r2, r1, dataType);
+		cost_start();
 		if(dataType == SZ_FLOAT)//==0
 		{
 			float* data = (float*)(*buf);
-			//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", r5, r4, r3, r2, r1);
 			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = bytes;
@@ -526,8 +549,11 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			printf("Compression error: unknown data type: %d\n", dataType);
 			exit(0);
 		}
+		cost_end();
+		printf("compression time = %lf, compression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
 	}
-	//H5Z_SZ_Finalize();
+	
+	H5Z_SZ_Finalize();
 	return *buf_size;
 }
 
