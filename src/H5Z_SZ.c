@@ -303,6 +303,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 		r2 = dims_used[1];
 		r3 = dims_used[2];	
 		r4 = dims_used[3];
+		break;
 	default: 
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_BADVALUE, 0, "requires chunks w/1,2,3 or 4 non-unity dims");
 	}
@@ -350,18 +351,12 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		/* decompress data */
 		if(dataType == SZ_FLOAT)//==0
 		{
-                        //size_t a = r3;
-                        //r3 = 0;
-                        //r2 = r1*r2;
-                        //r1 = a;
-		
 			//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", r5, r4, r3, r2, r1);
 			float* data = SZ_decompress(dataType, *buf, nbytes, r5, r4, r3, r2, r1);
 										
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(float);
-			return *buf_size;
 		}
 		else if(dataType == SZ_DOUBLE)//==1
 		{
@@ -369,7 +364,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(double);			
-			return *buf_size;
 		}
 		else if(dataType == SZ_INT8)
 		{
@@ -378,7 +372,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(char);
-			return *buf_size;			
 		}
 		else if(dataType == SZ_UINT8)
 		{
@@ -387,7 +380,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(unsigned char);
-			return *buf_size;			
 		}
 		else if(dataType == SZ_INT16)
 		{
@@ -396,7 +388,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(short);
-			return *buf_size;			
 		}
 		else if(dataType == SZ_UINT16)
 		{
@@ -405,7 +396,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(unsigned short);
-			return *buf_size;		
 		}
 		else if(dataType == SZ_INT32)
 		{
@@ -414,7 +404,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(int);
-			return *buf_size;				
 		}
 		else if(dataType == SZ_UINT32)
 		{
@@ -423,7 +412,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(unsigned int);
-			return *buf_size;				
 		}
 		else if(dataType == SZ_INT64)
 		{
@@ -432,7 +420,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(long);
-			return *buf_size;				
 		}
 		else if(dataType == SZ_UINT64)
 		{
@@ -441,7 +428,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = data;
 			*buf_size = nbEle*sizeof(unsigned long);
-			return *buf_size;			
 		}
 		else
 		{
@@ -457,19 +443,11 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		if(dataType == SZ_FLOAT)//==0
 		{
 			float* data = (float*)(*buf);
-			//printf("2: szMode=%d, errorBoundMode=%d, relBoundRatio=%f, data[0]=%f, data[1]=%f\n", szMode, errorBoundMode, relBoundRatio, data[0], data[1]);
-	                //size_t a = r3;
-                        //r3 = 0;
-			//r2 = r1*r2;
-                        //r1 = a;
-			//r3 = r1;
-			//r1 = a;
 			//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", r5, r4, r3, r2, r1);
 			unsigned char *bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;
 		}
 		else if(dataType == SZ_DOUBLE)//==1
 		{
@@ -478,7 +456,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;	
 		}
 		else if(dataType == SZ_INT8)
 		{
@@ -487,7 +464,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;				
 		}
 		else if(dataType == SZ_UINT8)
 		{
@@ -496,7 +472,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;					
 		}
 		else if(dataType == SZ_INT16)
 		{
@@ -505,7 +480,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;					
 		}
 		else if(dataType == SZ_UINT16)
 		{
@@ -514,7 +488,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;					
 		}
 		else if(dataType == SZ_INT32)
 		{
@@ -523,7 +496,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;				
 		}
 		else if(dataType == SZ_UINT32)
 		{
@@ -532,7 +504,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;					
 		}
 		else if(dataType == SZ_INT64)
 		{
@@ -541,7 +512,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;				
 		}
 		else if(dataType == SZ_UINT64)
 		{
@@ -550,7 +520,6 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			free(*buf);
 			*buf = bytes;
 			*buf_size = outSize;
-			return outSize;					
 		}
 		else 
 		{
@@ -558,7 +527,8 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			exit(0);
 		}
 	}
-	H5Z_SZ_Finalize();
+	//H5Z_SZ_Finalize();
+	return *buf_size;
 }
 
 void init_dims_chunk(int dim, hsize_t dims[5], hsize_t chunk[5], size_t nbEle, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
