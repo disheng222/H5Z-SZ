@@ -369,7 +369,7 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 	
 	if (flags & H5Z_FLAG_REVERSE) 
 	{ 
-		cost_start();
+		//cost_start();
 		/* decompress data */
 		if(dataType == SZ_FLOAT)//==0
 		{
@@ -455,15 +455,15 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			printf("Decompression error: unknown data type: %d\n", dataType);
 			exit(0);
 		}
-		cost_end();
-		printf("decompression time = %lf, decompression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
+		//cost_end();
+		//printf("decompression time = %lf, decompression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
 	}
 	else
 	{
 		size_t outSize = 0;
 	
-		printf("r5=%d, r4=%d, r3=%d, r2=%d, r1=%d, dataType=%d\n", r5, r4, r3, r2, r1, dataType);
-		cost_start();
+		//printf("r5=%d, r4=%d, r3=%d, r2=%d, r1=%d, dataType=%d\n", r5, r4, r3, r2, r1, dataType);
+		//cost_start();
 		if(dataType == SZ_FLOAT)//==0
 		{
 			float* data = (float*)(*buf);
@@ -549,8 +549,8 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 			printf("Compression error: unknown data type: %d\n", dataType);
 			exit(0);
 		}
-		cost_end();
-		printf("compression time = %lf, compression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
+		//cost_end();
+		//printf("compression time = %lf, compression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
 	}
 	
 	H5Z_SZ_Finalize();
