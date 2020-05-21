@@ -4,10 +4,10 @@
 #Quick start
 
 Step 1: Download SZ package from : https://github.com/disheng222/SZ
-# e.g., git clone https://github.com/disheng222/SZ
+- e.g., git clone https://github.com/disheng222/SZ
 
 Step 2: Install SZ by using "./configure --prefix=[INSTALL_PATH];make;make install"
-# e.g., ./configure --prefix=/home/sdi/Install/sz-1.4.10-beta-install
+- e.g., ./configure --prefix=/home/sdi/Install/sz-1.4.10-beta-install
 
 Step 3: You can go to example/ directory to test whether the installation of SZ is fine by the following commend: ./test.sh
 
@@ -20,7 +20,7 @@ HDF5PATH        = /home/sdi/Install/hdf5-1.10.1-install
 Step 6: Execute "make;make install"
 
 Step 7: Set HDF5_PLUGIN_PATH
-# e.g., 
+- e.g., 
 export HDF5_PLUGIN_PATH=$SZPATH/lib
 
 Step 8: Set the environment variable LD_LIBRARY_PATH as follows: 
