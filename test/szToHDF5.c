@@ -90,7 +90,9 @@ int main(int argc, char * argv[])
 
 	//Create cd_values
 	printf("Dimension sizes: n5=%u, n4=%u, n3=%u, n2=%u, n1=%u\n", r5, r4, r3, r2, r1); 
-	SZ_metaDataToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1);
+	//SZ_metaDataToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1);
+	load_conffile_flag = 0;
+	SZ_metaDataErrToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1, REL, 0, 0.01, 0, 0);
 	/*cd_nelmts = 5;
 	cd_values[0] = 3;
 	cd_values[1] = 0;
@@ -125,7 +127,7 @@ int main(int argc, char * argv[])
 	if(avail)
 	{
 		status = H5Zget_filter_info(H5Z_FILTER_SZ, &filter_config);
-		if((filter_config & H5Z_FILTER_CONFIG_ENCODE_ENABLED) && (filter_config & H5Z_FILTER_CONFIG_ENCODE_ENABLED))
+		if(filter_config & H5Z_FILTER_CONFIG_ENCODE_ENABLED)
 			printf("sz filter is available for encoding and decoding.\n");
 	}
 	if (0 > H5Pset_chunk(cpid, dim, chunk)) ERROR(H5Pset_chunk);
@@ -160,7 +162,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_IEEE_F32BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_IEEE_F32BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);						
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);
 	}
 	else if(dataType == SZ_DOUBLE)
@@ -182,7 +184,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_IEEE_F64BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_IEEE_F64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);
 	}
 	else if(dataType == SZ_INT8)
@@ -204,7 +206,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_I8BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_I8BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}
 	else if(dataType == SZ_UINT8)
@@ -226,7 +228,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_U8BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_U8BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}
 	else if(dataType == SZ_INT16)
@@ -248,7 +250,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_I16BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_I16BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}
 	else if(dataType == SZ_UINT16)
@@ -270,7 +272,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_U16BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_U16BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}
 	else if(dataType == SZ_INT32)
@@ -292,7 +294,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_I32BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_I32BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}
 	else if(dataType == SZ_UINT32)
@@ -314,7 +316,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_U32BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_U32BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}	
 	else if(dataType == SZ_INT64)
@@ -336,7 +338,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_I64BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_I64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}	
 	else if(dataType == SZ_UINT64)
@@ -358,7 +360,7 @@ int main(int argc, char * argv[])
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_STD_U64BE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_STD_U64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);				
 		}
-
+		free(data);
 		if (0 > H5Dclose(idsid)) ERROR(H5Dclose);		
 	}
 	else
@@ -371,11 +373,10 @@ int main(int argc, char * argv[])
 	if (0 > H5Sclose(sid)) ERROR(H5Sclose);
 	if (0 > H5Pclose(cpid)) ERROR(H5Pclose);
 	if (0 > H5Fclose(fid)) ERROR(H5Fclose);
-
+	free(cd_values);
 	printf("Output hdf5 file: %s\n", outputFilePath);
 	H5Z_SZ_Finalize();
 	H5close();
-    
 	return 0;
 }
 
