@@ -581,19 +581,18 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		}
 		else if(dataType == SZ_DOUBLE)//==1
 		{
-			printf("Executing .... dobuleType == SZ_DOUBLE\n");
 			double* data = (double*)(*buf);
 			unsigned char *bytes = NULL;
 			if(withErrInfo)
 			{
 				if(error_mode == PSNR)
 					confparams_cpr->psnr = psnr;
-				printf("dataType=%d, error_mode=%d, abs_err=%f, rel_err=%f\n", dataType, error_mode, abs_error, rel_error);
+				//printf("dataType=%d, error_mode=%d, abs_err=%f, rel_err=%f\n", dataType, error_mode, abs_error, rel_error);
 				bytes = SZ_compress_args(dataType, data, &outSize, error_mode, abs_error, rel_error, pw_rel_error, r5, r4, r3, r2, r1);
 			}
 			else
 			{
-				printf("....\n");
+				//printf("....\n");
 				bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 			}
 			free(*buf);
