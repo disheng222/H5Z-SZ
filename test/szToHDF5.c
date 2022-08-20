@@ -83,16 +83,11 @@ int main(int argc, char * argv[])
 	printf("cfgFile=%s\n", cfgFile); 
 	sprintf(outputFilePath, "%s.sz.h5", oriFilePath);
 
-//	printf("argv[1]=%s, dataType=%d\n", argv[1], dataType);
 	nbEle = computeDataLength(r5, r4, r3, r2, r1);
 		
-//	printf("nbEle=%u\n", nbEle);
-
 	//Create cd_values
 	printf("Dimension sizes: n5=%u, n4=%u, n3=%u, n2=%u, n1=%u\n", r5, r4, r3, r2, r1); 
-	//SZ_metaDataToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1);
-	load_conffile_flag = 0;
-	SZ_metaDataErrToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1, REL, 0, 0.01, 0, 0);
+	SZ_errConfigToCdArray(&cd_nelmts, &cd_values, dataType, REL, 0.001, 0.001, 0, 0); //SZ_FLOAT or SZ_DOUBLE or SZ_INT 100x500x500 : 0, 0, 100, 500, 500, ABS, REL (0.01, 0.01*(max-min), PW_REL (0.01, 5, 6, 7, 8, 9 --> 5*0.01, 6*0.01, ...), PSNR (mean squared error)). 
 	/*cd_nelmts = 5;
 	cd_values[0] = 3;
 	cd_values[1] = 0;
@@ -103,8 +98,8 @@ int main(int argc, char * argv[])
 	cd_values[6] = 0;*/
 	
 	int i = 0;
-//	for(i=0;i<cd_nelmts;i++)
-//		printf("cd_values[%d]=%u\n", i, cd_values[i]);
+	for(i=0;i<cd_nelmts;i++)
+		printf("cd_values[%d]=%u\n", i, cd_values[i]);
 
 	//compute dimension
 	int dim = computeDimension(r5, r4, r3, r2, r1);
@@ -124,12 +119,7 @@ int main(int argc, char * argv[])
 	/* Add the SZ compression filter and set the chunk size */
 	if (0 > H5Pset_filter(cpid, H5Z_FILTER_SZ, H5Z_FLAG_MANDATORY, cd_nelmts, cd_values)) ERROR(H5Pset_filter);	
 	avail = H5Zfilter_avail(H5Z_FILTER_SZ);
-	if(avail)
-	{
-		status = H5Zget_filter_info(H5Z_FILTER_SZ, &filter_config);
-		if(filter_config & H5Z_FILTER_CONFIG_ENCODE_ENABLED)
-			printf("sz filter is available for encoding and decoding.\n");
-	}
+
 	if (0 > H5Pset_chunk(cpid, dim, chunk)) ERROR(H5Pset_chunk);
 
 	//Initialize the configuration for SZ
@@ -142,7 +132,7 @@ int main(int argc, char * argv[])
 	//H5Z_SZ_Init(cfgFile);
 	
 	printf("....Writing SZ compressed data.............\n");
-    	
+
 	if(dataType == SZ_FLOAT)
 	{
 		float *data = readFloatData(oriFilePath, &nbEle, &status);
@@ -155,7 +145,7 @@ int main(int argc, char * argv[])
 		if(dataEndianType == LITTLE_ENDIAN_DATA)
 		{
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_IEEE_F32LE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
-			if (0 > H5Dwrite(idsid, H5T_IEEE_F32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);			
+			if (0 > H5Dwrite(idsid, H5T_IEEE_F32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);		
 		}
 		else //BIG_ENDIAN_DATA
 		{
