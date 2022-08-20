@@ -3,18 +3,18 @@
 
 #Quick start
 
-Step 1: Download SZ package from : https://github.com/disheng222/SZ
-# e.g., git clone https://github.com/disheng222/SZ
+Step 1: Download SZ package from : https://github.com/szcompressor/SZ
+# e.g., git clone https://github.com/szcompressor/SZ
 
 Step 2: Install SZ by using "./configure --prefix=[INSTALL_PATH];make;make install"
-# e.g., ./configure --prefix=/home/sdi/Install/sz-1.4.10-beta-install
+# e.g., ./configure --prefix=/home/sdi/Install/sz-2.1.11-install
 
 Step 3: You can go to example/ directory to test whether the installation of SZ is fine by the following commend: ./test.sh
 
 Step 4: Download the H5Z_SZ_filter (In fact, H5Z_SZ_filter has been integrated in SZ package: see the hdf5_filter directory) 
 
 Step 5: Open Makefile and modify the SZ path and HDF5 path based on your local setting:
-SZPATH          = /home/sdi/Install/sz-1.4.10-beta-install
+SZPATH          = /home/sdi/Install/sz-2.1.11-install
 HDF5PATH        = /home/sdi/Install/hdf5-1.10.1-install
 
 Step 6: Execute "make;make install"
@@ -45,6 +45,9 @@ Step 1: Put the sz.config configuration in the current directory. (Please see RE
 Step 2 (Compression): h5repack.sh [input_hdf5_file] [compressed_hdf5_file] or h5repack -f UD=32017,0 [input_hdf5_file] [compressed_hdf5_file] 
 
 Step 3 (Decompression): Read the compressed HDF5 file: h5dump [compressed_hdf5_file] > data.txt
+ 
+ # Note: 
+ Please read the docs/HDF5-SZ-Guide.pdf carefully, which should be very helpful.
  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

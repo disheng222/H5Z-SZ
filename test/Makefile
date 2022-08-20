@@ -36,14 +36,14 @@ szToHDF5:	szToHDF5.c
 	$(CC)  -O3 -g -o szToHDF5 szToHDF5.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
 
 dszFromHDF5:	dszFromHDF5.c
-	$(MPICC)  -O3 -o dszFromHDF5 dszFromHDF5.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
+	$(CC)  -O3 -o dszFromHDF5 dszFromHDF5.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
 
 convertBinToHDF5:	convertBinToHDF5.c
-	$(MPICC)  -O3 -o convertBinToHDF5 convertBinToHDF5.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
+	$(CC)  -O3 -o convertBinToHDF5 convertBinToHDF5.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
 
 test_mpio:	test_mpio.c
 	$(MPICC)  -O3 -o test_mpio test_mpio.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
 
 clean:
-	rm -f szToHDF5 dszFromHDF5 convertBinToHDF5 test_mpio
+	rm -f szToHDF5 dszFromHDF5 convertBinToHDF5 test_mpio print_h5repack_args
 
