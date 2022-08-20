@@ -359,7 +359,7 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
 	}
  }
 
-void SZ_errConfigToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int dataType, int error_bound_mode, float abs_error, float rel_error, float pw_rel_error, float psnr)
+void SZ_errConfigToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int error_bound_mode, float abs_error, float rel_error, float pw_rel_error, float psnr)
 {
 	*cd_values = (unsigned int*)malloc(sizeof(unsigned int)*5);
 	int k = 0;

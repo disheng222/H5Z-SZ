@@ -17,8 +17,8 @@ void usage()
 	printf("	-P <point-wise relative error bound>: specifying point-wise relative error bound\n");
 	printf("	-S <PSNR>: specifying PSNR\n");
 	printf("* examples: \n");
-	printf("	print_h5repack_args -M ABS -A 1E-3 (output: -f UD=32017,0,0,981668463,0,0,0)\n");
-	printf("	print_h5repack_args -M REL -R 1E-4 (output: -f UD=32017,0,1,0,953267991,0,0)\n");
+	printf("	print_h5repack_args -M ABS -A 1E-3 (output: -f UD=32017,0,5,0,981668463,0,0,0)\n");
+	printf("	print_h5repack_args -M REL -R 1E-4 (output: -f UD=32017,0,5,1,0,953267991,0,0)\n");
 	exit(0);
 }
 
@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 		printf("Error: wrong errBoundMode setting.\n");
 		exit(0);
 	}
-	printf("-f UD=32017,0");
+	printf("-f UD=32017,0,5");
 
 	for(i=0;i<5;i++)
 		printf(",%d",cd_values[i]);
