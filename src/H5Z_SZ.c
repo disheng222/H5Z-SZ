@@ -387,15 +387,15 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	H5T_class_t dclass;
 	H5T_sign_t dsign;
 	unsigned int flags = 0;
-	size_t mem_cd_nelmts = 0, cd_nelmts = 0;
+	size_t mem_cd_nelmts = 5, cd_nelmts = 0;
 	unsigned int mem_cd_values[12]={0,0,0,0,0,0,0,0,0,0,0,0}; 
 
 	//H5Z_FILTER_SZ
 	if (0 > H5Pget_filter_by_id(dcpl_id, H5Z_FILTER_SZ, &flags, &mem_cd_nelmts, mem_cd_values, 0, NULL, NULL))
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_CANTGET, 0, "unable to get current SZ cd_values");	
 	
-	//Note: Don't know why in here, I need to call H5Pget_filter_by_id() to load the mem_cd_values. The first call doesn't work....
-	//So, the duplicated H5Pget_filter_by_id() is not a careless mistake....
+	//the duplicated H5Pget_filter_by_id() is not a careless mistake....
+	//The first H5Pget_filter_by_id() is to get the number of cd_values, and the second one is to fill the cd_values.
 	if (0 > H5Pget_filter_by_id(dcpl_id, H5Z_FILTER_SZ, &flags, &mem_cd_nelmts, mem_cd_values, 0, NULL, NULL))
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_CANTGET, 0, "unable to get current SZ cd_values");
 
