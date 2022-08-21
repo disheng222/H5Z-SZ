@@ -42,11 +42,6 @@ char cfgFile[256] = "sz.config";
 
 static int h5z_sz_was_registered = 0;
 
-static size_t    H5Z_filter_sz(unsigned int flags, size_t cd_nelmts,
-                                const unsigned int cd_values[],
-                                size_t nbytes, size_t *buf_size, void **buf);
-static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t space_id);
-
 const H5Z_class2_t H5Z_SZ[1] = {{
 	H5Z_CLASS_T_VERS,              /* H5Z_class_t version */
 	H5Z_FILTER_SZ, /* Filter id number */
@@ -406,7 +401,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 
 	if(mem_cd_nelmts==0) //this means that the error information is missing from the cd_values
 	{
-		H5Z_SZ_Init(cfgFile);;
+		H5Z_SZ_Init(cfgFile);
 	}
 	else //this means that the error information is included in the cd_values
 	{
@@ -913,5 +908,7 @@ void init_dims_chunk(int dim, hsize_t dims[5], hsize_t chunk[5], size_t nbEle, s
 		}
 	}
 }
+
+
 
 
