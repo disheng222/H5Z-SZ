@@ -57,9 +57,9 @@ void SZ_cdArrayToMetaData(size_t cd_nelmts, const unsigned int cd_values[], int*
 void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int dataType, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 void SZ_cdArrayToMetaDataErr(size_t cd_nelmts, const unsigned int cd_values[], int* dimSize, int* dataType, size_t* r5, size_t* r4, size_t* r3, size_t* r2, size_t* r1,
-int* error_bound_mode, float* abs_error, float* rel_error, float* pw_rel_error, float* psnr);
+int* error_bound_mode, double* abs_error, double* rel_error, double* pw_rel_error, double* psnr);
 
-void SZ_errConfigToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int error_bound_mode, float abs_error, float rel_error, float pw_rel_error, float psnr);
+void SZ_errConfigToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int error_bound_mode, double abs_error, double rel_error, double pw_rel_error, double psnr);
 
 int checkCDValuesWithErrors(size_t cd_nelmts, const unsigned int cd_values[]);
 static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[], size_t nbytes, size_t* buf_size, void** buf);

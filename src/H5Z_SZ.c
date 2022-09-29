@@ -129,22 +129,26 @@ int H5Z_SZ_Finalize()
 
 
 void SZ_cdArrayToMetaDataErr(size_t cd_nelmts, const unsigned int cd_values[], int* dimSize, int* dataType, size_t* r5, size_t* r4, size_t* r3, size_t* r2, size_t* r1,
-int* error_bound_mode, float* abs_error, float* rel_error, float* pw_rel_error, float* psnr)
+int* error_bound_mode, double* abs_error, double* rel_error, double* pw_rel_error, double* psnr)
 {
 	SZ_cdArrayToMetaData(cd_nelmts, cd_values, dimSize, dataType, r5, r4, r3, r2, r1);
 	int dim = *dimSize;
 	int k = dim==1?4:dim+2;
-	unsigned char b[4];
+	unsigned char b[8];
 	int32ToBytes_bigEndian(b, cd_values[k++]);
 	*error_bound_mode = bytesToInt32_bigEndian(b);
 	int32ToBytes_bigEndian(b, cd_values[k++]);
-	*abs_error = bytesToFloat(b);
+	int32ToBytes_bigEndian(b+4, cd_values[k++]);
+	*abs_error = bytesToDouble(b);
 	int32ToBytes_bigEndian(b, cd_values[k++]);
-	*rel_error = bytesToFloat(b);	
+	int32ToBytes_bigEndian(b+4, cd_values[k++]);
+	*rel_error = bytesToDouble(b);	
 	int32ToBytes_bigEndian(b, cd_values[k++]);
-	*pw_rel_error = bytesToFloat(b);
+	int32ToBytes_bigEndian(b+4, cd_values[k++]);
+	*pw_rel_error = bytesToDouble(b);
 	int32ToBytes_bigEndian(b, cd_values[k++]);
-	*psnr = bytesToFloat(b);
+	int32ToBytes_bigEndian(b+4, cd_values[k++]);
+	*psnr = bytesToDouble(b);
 }
 
 /**
@@ -250,7 +254,7 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
  void SZ_refreshDimForCdArray(int dataType, size_t old_cd_nelmts, unsigned int *old_cd_values, size_t* new_cd_nelmts, unsigned int **new_cd_values, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
  {
 	 unsigned char bytes[8] = {0};
-	 *new_cd_values = (unsigned int*)malloc(sizeof(unsigned int)*12);
+	 *new_cd_values = (unsigned int*)malloc(sizeof(unsigned int)*16);
 	 
 	//correct dimension if needed
 	size_t _r[5];
@@ -283,7 +287,11 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
 				(*new_cd_values)[6] = old_cd_values[2];
 				(*new_cd_values)[7] = old_cd_values[3];
 				(*new_cd_values)[8] = old_cd_values[4];
-				*new_cd_nelmts = 9;
+				(*new_cd_values)[9] = old_cd_values[5];
+				(*new_cd_values)[10] = old_cd_values[6];
+				(*new_cd_values)[11] = old_cd_values[7];
+				(*new_cd_values)[12] = old_cd_values[8];
+				*new_cd_nelmts = 13;
 			}
 			break;		
 		case 2:
@@ -297,8 +305,12 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
 				(*new_cd_values)[5] = old_cd_values[1];
 				(*new_cd_values)[6] = old_cd_values[2];
 				(*new_cd_values)[7] = old_cd_values[3];
-				(*new_cd_values)[8] = old_cd_values[4];			
-				*new_cd_nelmts = 9;
+				(*new_cd_values)[8] = old_cd_values[4];
+				(*new_cd_values)[9] = old_cd_values[5];
+				(*new_cd_values)[10] = old_cd_values[6];
+				(*new_cd_values)[11] = old_cd_values[7];
+				(*new_cd_values)[12] = old_cd_values[8];
+				*new_cd_nelmts = 13;
 			}
 			break;
 		case 3:
@@ -313,8 +325,12 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
 				(*new_cd_values)[6] = old_cd_values[1];
 				(*new_cd_values)[7] = old_cd_values[2];
 				(*new_cd_values)[8] = old_cd_values[3];
-				(*new_cd_values)[9] = old_cd_values[4];			
-				*new_cd_nelmts = 10;
+				(*new_cd_values)[9] = old_cd_values[4];
+				(*new_cd_values)[10] = old_cd_values[5];
+				(*new_cd_values)[11] = old_cd_values[6];
+				(*new_cd_values)[12] = old_cd_values[7];
+				(*new_cd_values)[13] = old_cd_values[8];
+				*new_cd_nelmts = 14;
 			}
 			break;
 		case 4:
@@ -330,8 +346,12 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
 				(*new_cd_values)[7] = old_cd_values[1];
 				(*new_cd_values)[8] = old_cd_values[2];
 				(*new_cd_values)[9] = old_cd_values[3];
-				(*new_cd_values)[10] = old_cd_values[4];						
-				*new_cd_nelmts = 11;
+				(*new_cd_values)[10] = old_cd_values[4];
+				(*new_cd_values)[11] = old_cd_values[5];
+				(*new_cd_values)[12] = old_cd_values[6];
+				(*new_cd_values)[13] = old_cd_values[7];
+				(*new_cd_values)[14] = old_cd_values[8];
+				*new_cd_nelmts = 15;
 				break;
 			}
 		default:
@@ -349,25 +369,33 @@ void SZ_copymetaDataToCdArray(size_t* cd_nelmts, unsigned int *cd_values, int da
 				(*new_cd_values)[9] = old_cd_values[2];
 				(*new_cd_values)[10] = old_cd_values[3];
 				(*new_cd_values)[11] = old_cd_values[4];						
-				*new_cd_nelmts = 12;
+				(*new_cd_values)[12] = old_cd_values[5];
+				(*new_cd_values)[13] = old_cd_values[6];
+				(*new_cd_values)[14] = old_cd_values[7];
+				(*new_cd_values)[15] = old_cd_values[8];
+				*new_cd_nelmts = 16;
 			}
 	}
  }
 
-void SZ_errConfigToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int error_bound_mode, float abs_error, float rel_error, float pw_rel_error, float psnr)
+void SZ_errConfigToCdArray(size_t* cd_nelmts, unsigned int **cd_values, int error_bound_mode, double abs_error, double rel_error, double pw_rel_error, double psnr)
 {
-	*cd_values = (unsigned int*)malloc(sizeof(unsigned int)*5);
+	*cd_values = (unsigned int*)malloc(sizeof(unsigned int)*9);
 	int k = 0;
 	(*cd_values)[k++] = error_bound_mode;
-	unsigned char b[4];
-	floatToBytes(b, abs_error);
+	unsigned char b[8];
+	doubleToBytes(b, abs_error);
 	(*cd_values)[k++] = bytesToInt32_bigEndian(b);
-	floatToBytes(b, rel_error);
+	(*cd_values)[k++] = bytesToInt32_bigEndian(b+4);
+	doubleToBytes(b, rel_error);
 	(*cd_values)[k++] = bytesToInt32_bigEndian(b);	
-	floatToBytes(b, pw_rel_error);
+	(*cd_values)[k++] = bytesToInt32_bigEndian(b+4);
+	doubleToBytes(b, pw_rel_error);
 	(*cd_values)[k++] = bytesToInt32_bigEndian(b);		
-	floatToBytes(b, psnr);
+	(*cd_values)[k++] = bytesToInt32_bigEndian(b+4);
+	doubleToBytes(b, psnr);
 	(*cd_values)[k++] = bytesToInt32_bigEndian(b);
+	(*cd_values)[k++] = bytesToInt32_bigEndian(b+4);
 	*cd_nelmts = k;
 }
 
@@ -382,8 +410,8 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	H5T_class_t dclass;
 	H5T_sign_t dsign;
 	unsigned int flags = 0;
-	size_t mem_cd_nelmts = 5, cd_nelmts = 0;
-	unsigned int mem_cd_values[12]={0,0,0,0,0,0,0,0,0,0,0,0}; 
+	size_t mem_cd_nelmts = 9, cd_nelmts = 0;
+	unsigned int mem_cd_values[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
 
 	//H5Z_FILTER_SZ
 	//note that mem_cd_nelmts must be non-zero, otherwise, mem_cd_values cannot be filled.
@@ -476,6 +504,12 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	}
 	
 	unsigned int* cd_values = NULL;
+	if(mem_cd_nelmts!=0 && mem_cd_nelmts!=9)
+	{
+		H5Epush(H5E_DEFAULT,__FILE__, "H5Z_sz_set_local", __LINE__, H5E_ERR_CLS, H5E_ARGS, H5E_BADVALUE, "Wrong number of cd_values: The new version has 9 integer elements in cd_values. Please check 'test/print_h5repack_args' to get the correct cd_values.");
+		H5Eprint(H5E_DEFAULT, stderr);
+		return -1;
+	}
 	SZ_refreshDimForCdArray(dataType, mem_cd_nelmts, mem_cd_values, &cd_nelmts, &cd_values, dims_used[4], dims_used[3], dims_used[2], dims_used[1], dims_used[0]);
 	//printf("cd_nelmts=%zu\n", cd_nelmts);
 	
@@ -494,7 +528,7 @@ done:
 
 int checkCDValuesWithErrors(size_t cd_nelmts, const unsigned int cd_values[])
 {
-	int result = 0; //0 means no-error-information-in-cd_values; 1 means cd_values contains error information
+	int result = 0; //0 means no-error-information-in-cd_values; 1 means cd_values contains error information, -1 means wrong cd_values
 	int dimSize = cd_values[0];
 	//printf("nc_nelmts = %d\n", cd_nelmts);i
 	//printf("dimSize=%d, cd_nelmts=%d, \n", dimSize, cd_nelmts);
@@ -536,8 +570,11 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		return nbytes;
 	
 	int withErrInfo = checkCDValuesWithErrors(cd_nelmts, cd_values);
+	if(withErrInfo==-1) //indicate wrong cd_values setting
+		return 0;
+
 	int error_mode = 0;
-	float abs_error = 0, rel_error = 0, pw_rel_error = 0, psnr = 0;
+	double abs_error = 0, rel_error = 0, pw_rel_error = 0, psnr = 0;
 	if(withErrInfo)
 		SZ_cdArrayToMetaDataErr(cd_nelmts, cd_values, &dimSize, &dataType, &r5, &r4, &r3, &r2, &r1, &error_mode, &abs_error, &rel_error, &pw_rel_error, &psnr);
 	else
